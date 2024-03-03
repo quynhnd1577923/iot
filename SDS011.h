@@ -13,9 +13,6 @@
 
 #if ARDUINO >= 100
 	#include "Arduino.h"
-#else
-	#include "WProgram.h"
-#endif
 
 #ifndef ESP32 
 #include <SoftwareSerial.h>
