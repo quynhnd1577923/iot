@@ -21,6 +21,11 @@
 // #include <ERaLinux.hpp>
 #include <ERaOptionsArgs.hpp>
 #include <ERaConsole.h>
+#include "SdsDustSensor.h"
+
+int rxPin = 10;
+int txPin = 8;
+SdsDustSensor sds(rxPin, txPin);
 
 static const char* auth;
 static const char* boardID;
@@ -56,7 +61,10 @@ void timerEvent() {
 void setup() {
     serial.begin(devName, devBaud);
     console.init(V0, V1, V2);
-
+    sds.begin();
+  Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
+  Serial.println(sds.setActiveReportingMode().toString()); // ensures sensor is in 'active' reporting mode
+  Serial.println(sds.setContinuousWorkingPeriod().toString()); // ensures sensor has continuous working period - default but not recommended
     ERa.setAppLoop(false);
     ERa.setBoardID(boardID);
     ERa.begin(auth, host, port, user, pass);
@@ -66,6 +74,16 @@ void setup() {
 void loop() {
     ERa.run();
     console.run();
+  PmResult pm = sds.readPm();
+  if (pm.isOk()) {
+      ERa.virtualWrite(V0,pm.pm25);
+      ERa.virtualWrite(V1,pm.pm10);
+
+  } else {
+    Serial.print("Could not read values from sensor, reason: ");
+    Serial.println(pm.statusToString());
+    delay(100);
+
 }
 
 int main(int argc, char* argv[]) {
