@@ -76,6 +76,10 @@ void loop() {
     console.run();
   PmResult pm = sds.readPm();
   if (pm.isOk()) {
+    Serial.print("PM2.5 = ");
+    Serial.print(pm.pm25);
+    Serial.print(", PM10 = ");
+    Serial.println(pm.pm10);
       ERa.virtualWrite(V0,pm.pm25);
       ERa.virtualWrite(V1,pm.pm10);
 
