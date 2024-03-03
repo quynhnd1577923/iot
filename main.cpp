@@ -55,6 +55,19 @@ void timerEvent() {
     console.requestHumidity(100);
     console.requestTemperature(100);
     console.requestDistance(100);
+    PmResult pm = sds.readPm();
+  if (pm.isOk()) {
+    Serial.print("PM2.5 = ");
+    Serial.print(pm.pm25);
+    Serial.print(", PM10 = ");
+    Serial.println(pm.pm10);
+      ERa.virtualWrite(V0,pm.pm25);
+      ERa.virtualWrite(V1,pm.pm10);
+
+  } else {
+    Serial.print("Could not read values from sensor, reason: ");
+    Serial.println(pm.statusToString());
+    delay(100);
     printf("Uptime: %d\r\n", ERaMillis() / 1000L);
 }
 
@@ -74,19 +87,7 @@ void setup() {
 void loop() {
     ERa.run();
     console.run();
-  PmResult pm = sds.readPm();
-  if (pm.isOk()) {
-    Serial.print("PM2.5 = ");
-    Serial.print(pm.pm25);
-    Serial.print(", PM10 = ");
-    Serial.println(pm.pm10);
-      ERa.virtualWrite(V0,pm.pm25);
-      ERa.virtualWrite(V1,pm.pm10);
 
-  } else {
-    Serial.print("Could not read values from sensor, reason: ");
-    Serial.println(pm.statusToString());
-    delay(100);
 
 }
 
