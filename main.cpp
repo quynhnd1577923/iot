@@ -21,11 +21,12 @@
 // #include <ERaLinux.hpp>
 #include <ERaOptionsArgs.hpp>
 #include <ERaConsole.h>
-#include "SdsDustSensor.h"
+#include <SDS011.h>
 
-int rxPin = 10;
-int txPin = 8;
-SdsDustSensor sds(rxPin, txPin);
+float p10, p25;
+int error;
+
+SDS011 my_sds;
 
 static const char* auth;
 static const char* boardID;
@@ -55,29 +56,18 @@ void timerEvent() {
     console.requestHumidity(100);
     console.requestTemperature(100);
     console.requestDistance(100);
-    PmResult pm = sds.readPm();
-  if (pm.isOk()) {
-    Serial.print("PM2.5 = ");
-    Serial.print(pm.pm25);
-    Serial.print(", PM10 = ");
-    Serial.println(pm.pm10);
-      ERa.virtualWrite(V0,pm.pm25);
-      ERa.virtualWrite(V1,pm.pm10);
-
-  } else {
-    Serial.print("Could not read values from sensor, reason: ");
-    Serial.println(pm.statusToString());
-    delay(100);
-    printf("Uptime: %d\r\n", ERaMillis() / 1000L);
+    
+  error = my_sds.read(&p25, &p10);
+	if (!error) {
+		Serial.println("P2.5: " + String(p25));
+		Serial.println("P10:  " + String(p10));
+	}
 }
 
 void setup() {
     serial.begin(devName, devBaud);
-    console.init(V0, V1, V2);
-    sds.begin();
-  Serial.println(sds.queryFirmwareVersion().toString()); // prints firmware version
-  Serial.println(sds.setActiveReportingMode().toString()); // ensures sensor is in 'active' reporting mode
-  Serial.println(sds.setContinuousWorkingPeriod().toString()); // ensures sensor has continuous working period - default but not recommended
+    my_sds.begin(10, 8);
+    
     ERa.setAppLoop(false);
     ERa.setBoardID(boardID);
     ERa.begin(auth, host, port, user, pass);
